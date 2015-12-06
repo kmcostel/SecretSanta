@@ -10,23 +10,26 @@
 #include <time.h>
 #include <string.h>
 
+/*Assuming names unser 20 characters */
+#define MAX_NAME 20
 #define NUM_PEOPLE 11
 #define false 0
 #define true 1
 
-int available[NUM_PEOPLE];
-static char* names[NUM_PEOPLE] = {
+/*static char* names[NUM_PEOPLE] = {
     "Kevin", "Ashley",
     "Beth", "Davis", "Nick",
     "Charissa", "Marisa",
     "Emi", "Kyle", "Cara",
     "Sierra"
-};
+};*/
+char **names;
+int numNames;
 
 /* Get index of a person who has no gifter
  * and who isn't me
  */
-int getOpenGiftee(int me) {
+int getOpenGiftee(int me, int available[]) {
    int option;
    time_t time;
 
@@ -37,7 +40,7 @@ int getOpenGiftee(int me) {
    option = me;
    while (option == me) {
       /* [0, NUM_PEOPLE) */
-      option = rand() % NUM_PEOPLE;
+      option = rand() % numNames;
       
       if (available[option] == false) {
          option = me;
@@ -52,12 +55,21 @@ int getOpenGiftee(int me) {
 
 void makePairings(FILE *list) {
    int i, open;
-   char buffer[20];
+   char buffer[MAX_NAME];
+   int available[numNames];
 
+   for (i = 0; i < numNames; i++) {
+      available[i] = true;
+   }
 
+   /* Continue making the program work with a variable
+    * file name, with list of names. Need to make a list of names,
+    * each name will need to be malloc-ed"
+    */
+   
    /* Get pairing for each person */
-   for (i = 0; i < NUM_PEOPLE; i++) {
-      open = getOpenGiftee(i);
+   for (i = 0; i < numNames; i++) {
+      open = getOpenGiftee(i, available);
       sprintf(buffer, "%s %s\n", names[i], names[open]);
       
       /* Write to list(FILE*) */
@@ -66,25 +78,74 @@ void makePairings(FILE *list) {
 
 }
 
+void freeNames() {
+   int i;
+
+   for (i = 0; i < numNames; i++) {
+      free(*(names+i));
+   }
+}
+
+void initNames() {
+   names = (char **)malloc(numNames * sizeof(char *));
+}
+
+/* Test if list was created correctly */
+void printNameList() {
+   int i;
+
+   for (i = 0; i < numNames; i++) {
+      puts(*(names + i));
+   }
+}
 
 int main (int argc, char **argv) {
    
-   FILE *santasList;
+   FILE *santasList, *namesList;
    int i;
+   char buffer[MAX_NAME];
+   char *namesFile;
+   
+
+   if (argc == 1) {
+      printf("Usage: ./SantaChooser names\n");
+      printf("\"names\" is a file starting with a number,"
+	      " followed by that number of names, "
+	      "on seperate lines.\n");
+      puts("\nDefaulting to \"names.txt\"\n");
+      namesFile = "names.txt";
+   }
+   else {
+      namesFile = argv[1];
+   }
 
    santasList = fopen("SecretList.txt", "w");
-   
    if (santasList == NULL) {
       fprintf(stderr, "Couldn't make Santa's list =(\n");
       exit(1);
    }
 
-   for (i = 0; i < NUM_PEOPLE; i++) {
-      available[i] = true;
+   namesList = fopen("names.txt", "r");
+   if (namesList == NULL) {
+      printf("Invalid file name, try again\n");
+      exit(1);
    }
+
+   fscanf(namesList, "%d", &numNames);
+   initNames();
+
+   i = 0;
+   while (fscanf(namesList, "%s", buffer) == 1) {
+      *(names + i) = malloc(strlen(buffer));
+      strcpy(*(names + i), buffer);
+      ++i;
+   }
+
+   //printNameList();
 
    makePairings(santasList);
 
+   puts("Done, pairings listed in \"SecretList.txt\"\n");
    return 0;
 }
 
