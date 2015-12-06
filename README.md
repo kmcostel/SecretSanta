@@ -1,9 +1,9 @@
 # SecretSanta
 An exciting Secret Santa chooser!
 
-Compile with *make list*
+Compile with **make list**
 
-Run with *./SantaChooser YOUR_LIST_OF_NAMES_HERE*
+Run with **./SantaChooser YOUR_LIST_OF_NAMES_HERE**
 
 Be careful! The pairings of secret santas is listed in "SecretList.txt"
 
