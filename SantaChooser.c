@@ -1,7 +1,6 @@
 /* @Author Kevin Costello
- * Goal: Program will write combinations
- * of secret santa pairings to a file named
- * pairings
+ * Goal: Program will write combinations of
+ * secret santa pairings to a file named pairings
  */
 
 #include <stdio.h>
@@ -10,20 +9,15 @@
 #include <time.h>
 #include <string.h>
 
-/*Assuming names unser 20 characters */
+/*Assuming names under 20 characters */
 #define MAX_NAME 20
 #define NUM_PEOPLE 11
 #define false 0
 #define true 1
 
-/*static char* names[NUM_PEOPLE] = {
-    "Kevin", "Ashley",
-    "Beth", "Davis", "Nick",
-    "Charissa", "Marisa",
-    "Emi", "Kyle", "Cara",
-    "Sierra"
-};*/
+
 char **names;
+/* Number of names; number at start of inputted file */
 int numNames;
 
 /* Get index of a person who has no gifter
@@ -42,11 +36,15 @@ int getOpenGiftee(int me, int available[]) {
       /* [0, NUM_PEOPLE) */
       option = rand() % numNames;
       
+      /* If the chosen option (person) is unavailable
+       * AKA already has a secret santa assigned to
+       * themselves, then re-run loop */
       if (available[option] == false) {
          option = me;
       }
    }
 
+   /* Set chosen option to false (unavailable) */
    available[option] = false;
    
    return option;
@@ -72,7 +70,7 @@ void makePairings(FILE *list) {
       open = getOpenGiftee(i, available);
       sprintf(buffer, "%s %s\n", names[i], names[open]);
       
-      /* Write to list(FILE*) */
+      /* Write to list (FILE*) */
       fwrite(buffer, strlen(buffer), 1, list);
    }
 
@@ -119,6 +117,8 @@ int main (int argc, char **argv) {
       namesFile = argv[1];
    }
 
+   /* Create a blank file called "SecretList.txt"
+    * for the pairings of people */
    santasList = fopen("SecretList.txt", "w");
    if (santasList == NULL) {
       fprintf(stderr, "Couldn't make Santa's list =(\n");
@@ -131,17 +131,18 @@ int main (int argc, char **argv) {
       exit(1);
    }
 
+   /* Read number at beginning of file */
    fscanf(namesList, "%d", &numNames);
+   
    initNames();
 
    i = 0;
+   /* While names are still being read in */
    while (fscanf(namesList, "%s", buffer) == 1) {
       *(names + i) = malloc(strlen(buffer));
       strcpy(*(names + i), buffer);
       ++i;
    }
-
-   //printNameList();
 
    makePairings(santasList);
 
